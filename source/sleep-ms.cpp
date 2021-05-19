@@ -43,10 +43,10 @@ void doSleep()
 {
     switch ( sleepMode)
     {
-        case 0: uBit.power.deepSleep(); break;
-        case 1: uBit.power.deepSleep( timer_period - 1000); break;
+        case 0: uBit.power.deepSleepAsync(); break;
+        case 1: uBit.power.deepSleep(); break;
         case 2: uBit.power.deepSleep( uBit.io.P1); break;
-        case 3: uBit.sleep( timer_period + 1000); break;
+        case 3: uBit.power.deepSleep( timer_period - 1000); break;
     }
 }
 
