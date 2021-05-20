@@ -8,6 +8,15 @@
 //AB for deepSleep(P1)
 //P1 for no deep sleep
 
+/*
+Thinking about using deepSleep in a forever loop...
+
+I'm struggling to think of an application, unless I really wanted to avoid using event handlers or there weren't any that would call deepSleep. deepSleepAsync doesn't seem to make any sense.
+
+system_timer_event_after(period) + uBit.power.deepSleep() has the effect of deep sleep for up to period. Compare uBit.sleep(period), which does sleep for at least period.
+
+*/
+
 #include "MicroBit.h"
 
 #ifndef MICROBIT_CODAL
@@ -29,8 +38,12 @@ uint64_t timeD = 0;
 uint64_t second = 1000000;
 
 uint16_t timer_id = 60000;
-uint16_t timer_value = 0;
+uint16_t timer_value = 1;
 CODAL_TIMESTAMP timer_period = 10000; //ms
+
+uint16_t forever_id = 60000;
+uint16_t forever_value = 2;
+CODAL_TIMESTAMP forever_after = 3000; //ms
 
 int accel_x;
 int p2_analogue;
@@ -45,8 +58,8 @@ void doSleep()
     {
         case 0: uBit.power.deepSleepAsync(); break;
         case 1: uBit.power.deepSleep(); break;
-        case 2: uBit.power.deepSleep( uBit.io.P1); break;
-        case 3: uBit.power.deepSleep( timer_period - 1000); break;
+        case 2: uBit.power.deepSleepAsync(); break;
+        case 3: uBit.power.deepSleep(); break;
     }
 }
 
@@ -213,15 +226,17 @@ void test_forever()
     DMESG( "P5  wake %d", uBit.io.P5.getWakeOnActive());
     DMESG( "P11 wake %d", uBit.io.P11.getWakeOnActive());
 
-    system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
+    //system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
     while (true)
     {
         accel_x = uBit.accelerometer.getX();
         p2_analogue = uBit.io.P2.getAnalogValue();
         light_level = uBit.display.readLightLevel();
-        DMESG( "test_forever p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
-        uBit.sleep(2000);
+        DMESGN( "%u:test_forever p2_analogue %d light_level %d accel_x %d ", (unsigned int) system_timer_current_time_us(), p2_analogue, light_level, accel_x);
+        sendTime();
+
+        uBit.power.deepSleep(3000);
     }
 }
 
