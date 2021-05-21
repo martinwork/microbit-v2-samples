@@ -98,15 +98,8 @@ void onTimer(MicroBitEvent e)
     p2_analogue = uBit.io.P2.getAnalogValue();
     light_level = uBit.display.readLightLevel();
     DMESG( "onTimer p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
-    uBit.sleep(1000);
-
-    DMESGN( "%u:onTimer before doSleep ", (unsigned int) system_timer_current_time_us());
-    sendTime();
 
     doSleep();
-
-    DMESGN( "%u:onTimer after  doSleep ", (unsigned int) system_timer_current_time_us());
-    sendTime();
 }
 
 
@@ -228,15 +221,17 @@ void test_forever()
 
     //system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
+    uBit.sleep(100);
+
     while (true)
     {
+        uBit.power.deepSleep(3000);
+
         accel_x = uBit.accelerometer.getX();
         p2_analogue = uBit.io.P2.getAnalogValue();
         light_level = uBit.display.readLightLevel();
         DMESGN( "%u:test_forever p2_analogue %d light_level %d accel_x %d ", (unsigned int) system_timer_current_time_us(), p2_analogue, light_level, accel_x);
         sendTime();
-
-        uBit.power.deepSleep(3000);
     }
 }
 
