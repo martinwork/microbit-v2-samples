@@ -153,12 +153,19 @@ void onClickB(MicroBitEvent e)
     DMESGN( "%u:onClickB %d, %d, %u ", (unsigned int) system_timer_current_time_us(), (int) e.source, (int) e.value, (unsigned int) e.timestamp);
     sendTime();
 
+    uBit.sleep( 5000);
+
     uBit.display.printCharAsync('B');
+
+    DMESG( "%u:onClickB allow sleep now", (unsigned int) system_timer_current_time_us());
+    uBit.power.deepSleepYieldAsync();
+
+    uBit.sleep( 5000);
 
     accel_x = uBit.accelerometer.getX();
     p2_analogue = uBit.io.P2.getAnalogValue();
     light_level = uBit.display.readLightLevel();
-    DMESG( "onClickB p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
+    DMESG( "%u:onClickB p2_analogue %d light_level %d accel_x %d", (unsigned int) system_timer_current_time_us(), p2_analogue, light_level, accel_x);
 }
 
 
@@ -272,10 +279,9 @@ void togglePixel( int x, int y)
 
 void forever()
 {
-    uBit.power.deepSleepYieldAsync(true);
-
     while (true)
     {
+        uBit.power.deepSleepYieldAsync();
         //DMESG( "forever ");
         togglePixel( 0, 0);
         uBit.sleep(1000);
