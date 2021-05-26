@@ -39,11 +39,9 @@ uint64_t second = 1000000;
 
 uint16_t timer_id = 60000;
 uint16_t timer_value = 1;
-CODAL_TIMESTAMP timer_period = 10000; //ms
+CODAL_TIMESTAMP timer_period = 20000; //ms
 
-uint16_t forever_id = 60000;
-uint16_t forever_value = 2;
-CODAL_TIMESTAMP forever_after = 3000; //ms
+CODAL_TIMESTAMP forever_sleep = 3000; //ms
 
 int accel_x;
 int p2_analogue;
@@ -51,17 +49,6 @@ int light_level;
 
 int sleepMode = 0;
 
-
-void doSleep()
-{
-    switch ( sleepMode)
-    {
-        case 0: uBit.power.deepSleepAsync(); break;
-        case 1: uBit.power.deepSleep(); break;
-        case 2: uBit.power.deepSleepAsync(); break;
-        case 3: uBit.power.deepSleep(); break;
-    }
-}
 
 
 void sendTime()
@@ -99,7 +86,7 @@ void onTimer(MicroBitEvent e)
     light_level = uBit.display.readLightLevel();
     DMESG( "onTimer p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
 
-    doSleep();
+    uBit.power.deepSleep();
 }
 
 
@@ -116,12 +103,12 @@ void onEventAndSleep(MicroBitEvent e)
     //DMESGN( "onEventAndSleep EXIT ");
     //sendTime();
 
-    DMESGN( "%u:onEventAndSleep before doSleep ", (unsigned int) system_timer_current_time_us());
+    DMESGN( "%u:onEventAndSleep before deepSleepAsync ", (unsigned int) system_timer_current_time_us());
     sendTime();
 
-    doSleep();
+    uBit.power.deepSleepAsync();
 
-    DMESGN( "%u:onEventAndSleep after doSleep ", (unsigned int) system_timer_current_time_us());
+    DMESGN( "%u:onEventAndSleep after deepSleepAsync ", (unsigned int) system_timer_current_time_us());
     sendTime();
 }
 
@@ -135,9 +122,6 @@ void onEvent(MicroBitEvent e)
     p2_analogue = uBit.io.P2.getAnalogValue();
     light_level = uBit.display.readLightLevel();
     DMESG( "onEvent p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
-
-    //DMESGN( "onEvent EXIT ");
-    //sendTime();
 }
 
 
@@ -151,15 +135,15 @@ void onClickA(MicroBitEvent e)
     accel_x = uBit.accelerometer.getX();
     p2_analogue = uBit.io.P2.getAnalogValue();
     light_level = uBit.display.readLightLevel();
-    DMESG( "onEvent p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
+    DMESG( "onClickA p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
 
 
-    DMESGN( "%u:onClickA before doSleep ", (unsigned int) system_timer_current_time_us());
+    DMESGN( "%u:onClickA before deepSleep ", (unsigned int) system_timer_current_time_us());
     sendTime();
 
-    doSleep();
+    uBit.power.deepSleep();
 
-    DMESGN( "%u:onClickA after doSleep ", (unsigned int) system_timer_current_time_us());
+    DMESGN( "%u:onClickA after deepSleep ", (unsigned int) system_timer_current_time_us());
     sendTime();
 }
 
@@ -174,10 +158,7 @@ void onClickB(MicroBitEvent e)
     accel_x = uBit.accelerometer.getX();
     p2_analogue = uBit.io.P2.getAnalogValue();
     light_level = uBit.display.readLightLevel();
-    DMESG( "onEvent p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
-
-    //DMESGN( "onEvent EXIT ");
-    //sendTime();
+    DMESG( "onClickB p2_analogue %d light_level %d accel_x %d", p2_analogue, light_level, accel_x);
 }
 
 
@@ -198,12 +179,9 @@ void test_forever()
     uBit.io.P1.setPull(PullMode::Down);
     uBit.io.P1.eventOn(DEVICE_PIN_EVENT_ON_EDGE);
 
-    //uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,  MICROBIT_EVT_ANY, onEvent);
-    //uBit.messageBus.listen( MICROBIT_ID_BUTTON_B,  MICROBIT_EVT_ANY, onEvent);
     uBit.messageBus.listen( MICROBIT_ID_IO_P1,     MICROBIT_EVT_ANY, onEventAndSleep);
     uBit.messageBus.listen( MICROBIT_ID_IO_P2,     MICROBIT_EVT_ANY, onEvent);
-    //uBit.messageBus.listen( MICROBIT_ID_IO_P5,     MICROBIT_EVT_ANY, onEvent);
-    //uBit.messageBus.listen( MICROBIT_ID_IO_P11,    MICROBIT_EVT_ANY, onEventAndSleep);
+
     uBit.messageBus.listen( timer_id, timer_value, onTimer);
 
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,  MICROBIT_BUTTON_EVT_CLICK, onClickA);
@@ -219,19 +197,24 @@ void test_forever()
     DMESG( "P5  wake %d", uBit.io.P5.getWakeOnActive());
     DMESG( "P11 wake %d", uBit.io.P11.getWakeOnActive());
 
-    //system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
+    system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
     uBit.sleep(100);
 
     while (true)
     {
-        uBit.power.deepSleep(3000);
-
         accel_x = uBit.accelerometer.getX();
         p2_analogue = uBit.io.P2.getAnalogValue();
         light_level = uBit.display.readLightLevel();
         DMESGN( "%u:test_forever p2_analogue %d light_level %d accel_x %d ", (unsigned int) system_timer_current_time_us(), p2_analogue, light_level, accel_x);
         sendTime();
+        togglePixel( 4, 4);
+        uBit.sleep(1000);
+        togglePixel( 4, 4);
+        DMESGN( "%u:test_forever ", (unsigned int) system_timer_current_time_us());
+        sendTime();
+        //uBit.power.deepSleepYield();
+        uBit.power.deepSleep(forever_sleep);
     }
 }
 
@@ -289,6 +272,8 @@ void togglePixel( int x, int y)
 
 void forever()
 {
+    uBit.power.deepSleepYieldAsync(true);
+
     while (true)
     {
         //DMESG( "forever ");
