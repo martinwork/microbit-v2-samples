@@ -6,11 +6,6 @@ MicroBit uBit;
 
 void togglePixel( int x, int y);
 
-uint16_t timer_id = 60000;
-uint16_t timer_value = 1;
-CODAL_TIMESTAMP timer_period = 25000; //ms
-
-CODAL_TIMESTAMP forever_sleep = 3000; //ms
 
 
 void sendTime( const char *suffix)
@@ -38,9 +33,7 @@ void sendTime( const char *suffix)
 
 void onTimer(MicroBitEvent e)
 {
-#if CONFIG_ENABLED(DEVICE_DEEPSLEEP_DEFAULT_ALLOW)
-    uBit.power.deepSleepYieldAsync(0);
-#endif
+    uBit.power.powerDownDisable();
 
     sendTime( "onTimer\n");
 
@@ -49,46 +42,38 @@ void onTimer(MicroBitEvent e)
     for ( int i = 0; i < 5; i++)
     {
       light += uBit.display.readLightLevel();
-      uBit.sleep(1000);
+      uBit.sleep(100);
     }
     light /= 10;
 
     sendTime("");
     uBit.serial.send( "light = " + ManagedString( light) + "\n");
 
+    uBit.power.powerDownEnable();
     uBit.power.deepSleep();
 }
 
 
 void onClickA(MicroBitEvent e)
 {
-#if CONFIG_ENABLED(DEVICE_DEEPSLEEP_DEFAULT_ALLOW)
-    uBit.power.deepSleepYieldAsync(0);
-#endif
+    uBit.power.powerDownDisable();
 
     sendTime( "onClickA\n");
 
-    uBit.display.scroll("ON CLICK A");
+    uBit.display.scroll("ON A");
 
-    sendTime( "onClickA before\n");
+    sendTime( "onClickA sleep\n");
 
-    uBit.power.deepSleep();
-
-    sendTime( "onClickA after\n");
-
-    uBit.display.scroll("AFTER A");
+    uBit.power.powerDownEnable();
+    uBit.power.deepSleepAsync();
 }
 
 
 void onClickB(MicroBitEvent e)
 {
-#if CONFIG_ENABLED(DEVICE_DEEPSLEEP_DEFAULT_ALLOW)
-    uBit.power.deepSleepYieldAsync(0);
-#endif
+    uBit.power.powerDownDisable();
 
     sendTime( "onClickB\n");
-
-    uBit.display.scroll("ON CLICK B");
 
     for ( int i = 0; i < 10; i++)
     {
@@ -96,48 +81,41 @@ void onClickB(MicroBitEvent e)
       uint32_t us = floor( 0.5 + 1000000.0 / f);
       uBit.audio.virtualOutputPin.setAnalogPeriodUs( us);
       uBit.audio.virtualOutputPin.setAnalogValue(128);
-      uBit.sleep(200);
+      uBit.sleep(100);
     }
     uBit.audio.virtualOutputPin.setAnalogValue(0);
     uBit.audio.virtualOutputPin.setAnalogPeriodUs( 20000);
+    uBit.sleep(100);
 
-    sendTime( "onClickB before\n");
-
-    uBit.power.deepSleep();
-
-    sendTime( "onClickB after\n");
-
-    uBit.display.scroll("AFTER B");
+    sendTime( "onClickB sleep\n");
+    uBit.power.powerDownEnable();
+    uBit.power.deepSleepAsync();
 }
 
 
 void milliseconds()
 {
-#if CONFIG_ENABLED(DEVICE_DEEPSLEEP_DEFAULT_ALLOW)
-    uBit.power.deepSleepYieldAsync(0);
-#endif
-
     while (true)
     {
+        uBit.power.powerDownDisable();
+
         togglePixel( 4, 0);
         uBit.sleep(1000);
         togglePixel( 4, 0);
 
-        sendTime( "milliseconds before\n");
+        sendTime( "milliseconds sleep\n");
 
-        uBit.power.deepSleep(forever_sleep);
-
-        sendTime( "milliseconds after\n");
-        uBit.sleep(20);
+        uBit.power.powerDownEnable();
+        uBit.power.deepSleep( 5000);
     }
 }
 
 
 void test()
 {
-    sendTime( "test\n");
+    uBit.power.powerDownDisable();
 
-    uBit.messageBus.listen( timer_id, timer_value, onTimer);
+    sendTime( "test\n");
 
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,  MICROBIT_BUTTON_EVT_CLICK, onClickA);
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_B,  MICROBIT_BUTTON_EVT_CLICK, onClickB);
@@ -145,21 +123,23 @@ void test()
     uBit.io.buttonA.wakeOnActive(1);
     uBit.io.buttonB.wakeOnActive(1);
 
-    system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
+    uint16_t timer_id = 60000;
+    uint16_t timer_value = 1;
+    CODAL_TIMESTAMP timer_period = 10000; //ms
 
-    create_fiber( milliseconds);
+    uBit.messageBus.listen( timer_id, timer_value, onTimer);
+    system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
     while (true)
     {
-        togglePixel( 4, 4);
-        uBit.sleep(100);
-        togglePixel( 4, 4);
+      uBit.power.powerDownDisable();
 
-#if CONFIG_ENABLED(DEVICE_DEEPSLEEP_DEFAULT_ALLOW)
-#else
-        uBit.power.deepSleepYield();
-#endif
-        uBit.sleep(20);
+      togglePixel( 4, 4);
+      uBit.sleep(200);
+      togglePixel( 4, 4);
+
+      uBit.power.powerDownEnable();
+      uBit.sleep(2000);
     }
 }
 
@@ -186,6 +166,7 @@ int  main()
     uBit.init();
 
     create_fiber( forever);
+    create_fiber( milliseconds);
     create_fiber( test);
 
 #if CONFIG_ENABLED(MICROBIT_BLE_ENABLED)
