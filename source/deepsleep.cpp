@@ -113,7 +113,7 @@ void milliseconds()
 
 void test()
 {
-    uBit.power.powerDownDisable();
+    //uBit.power.powerDownDisable();
 
     sendTime( "test\n");
 
@@ -123,23 +123,26 @@ void test()
     uBit.io.buttonA.wakeOnActive(1);
     uBit.io.buttonB.wakeOnActive(1);
 
-    uint16_t timer_id = 60000;
-    uint16_t timer_value = 1;
-    CODAL_TIMESTAMP timer_period = 10000; //ms
+    //uint16_t timer_id = 60000;
+    //uint16_t timer_value = 1;
+    //CODAL_TIMESTAMP timer_period = 10000; //ms
 
-    uBit.messageBus.listen( timer_id, timer_value, onTimer);
-    system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
+    //uBit.messageBus.listen( timer_id, timer_value, onTimer);
+    //system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
     while (true)
     {
-      uBit.power.powerDownDisable();
+      uBit.power.deepSleep();
+      uBit.sleep(0);
 
-      togglePixel( 4, 4);
-      uBit.sleep(200);
-      togglePixel( 4, 4);
+      //uBit.power.powerDownDisable();
 
-      uBit.power.powerDownEnable();
-      uBit.sleep(2000);
+      //togglePixel( 4, 4);
+      //uBit.sleep(200);
+      //togglePixel( 4, 4);
+
+      //uBit.power.powerDownEnable();
+      //uBit.sleep(2000);
     }
 }
 
@@ -166,7 +169,7 @@ int  main()
     uBit.init();
 
     create_fiber( forever);
-    create_fiber( milliseconds);
+    //create_fiber( milliseconds);
     create_fiber( test);
 
 #if CONFIG_ENABLED(MICROBIT_BLE_ENABLED)
