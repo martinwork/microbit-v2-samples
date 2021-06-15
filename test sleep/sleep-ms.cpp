@@ -208,10 +208,10 @@ void test_forever()
     uBit.io.buttonA.wakeOnActive(1);
     uBit.io.buttonB.wakeOnActive(1);
 
-    DMESG( "P1  wake %d", uBit.io.P1.getWakeOnActive());
-    DMESG( "P2  wake %d", uBit.io.P2.getWakeOnActive());
-    DMESG( "P5  wake %d", uBit.io.P5.getWakeOnActive());
-    DMESG( "P11 wake %d", uBit.io.P11.getWakeOnActive());
+    DMESG( "P1  wake %d", uBit.io.P1.isWakeOnActive());
+    DMESG( "P2  wake %d", uBit.io.P2.isWakeOnActive());
+    DMESG( "P5  wake %d", uBit.io.P5.isWakeOnActive());
+    DMESG( "P11 wake %d", uBit.io.P11.isWakeOnActive());
 
     system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 

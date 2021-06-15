@@ -73,6 +73,8 @@ void onClickB(MicroBitEvent e)
 {
     uBit.power.powerDownDisable();
 
+    DMESG( "%u:onClickB", (unsigned int) system_timer_current_time());
+
     sendTime( "onClickB\n");
 
     for ( int i = 0; i < 10; i++)
@@ -130,10 +132,14 @@ void test()
     //uBit.messageBus.listen( timer_id, timer_value, onTimer);
     //system_timer_event_every( timer_period, timer_id, timer_value, CODAL_TIMER_EVENT_FLAGS_WAKEUP);
 
+    uBit.display.image.setPixelValue( 4, 2, 255);
+
     while (true)
     {
+      togglePixel( 4, 3);
+      togglePixel( 4, 2);
       uBit.power.deepSleep();
-      uBit.sleep(0);
+      uBit.sleep(20);
 
       //uBit.power.powerDownDisable();
 
@@ -168,7 +174,7 @@ int  main()
 {
     uBit.init();
 
-    create_fiber( forever);
+    //create_fiber( forever);
     //create_fiber( milliseconds);
     create_fiber( test);
 
