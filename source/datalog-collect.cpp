@@ -7,10 +7,79 @@ MicroBitUARTService *uart;
 
 bool datalog_collect_running = false;
 
+/**
+ * Send the logged data to serial or BLE UART.
+ * @param uart BLE uart service to send to. NULL to send to serial.
+ */
+void datalog_sendCSV(MicroBitUARTService *uart)
+{
+    bool useUART = uart && uart->getConnected();
+
+    uint32_t dataStart;
+    uint32_t dataEnd;
+    uBit.log.getDataStartAndEnd( &dataStart, &dataEnd);
+
+    uint32_t size    = dataEnd - dataStart;
+    uint32_t address = dataStart;
+
+    FSCache cache(uBit.flash, CONFIG_MICROBIT_LOG_CACHE_BLOCK_SIZE, 4);
+
+    ManagedBuffer buffer(1024);
+    ManagedString csv;
+
+    while (size)
+    {
+        uint32_t block = buffer.length();
+        if ( block > size)
+            block = size;
+
+        cache.read(address, &buffer[0], block);
+
+        uint32_t iStart = 0;
+        uint32_t iNext = 0;
+        for ( uint32_t i = 0; i < block; i++)
+        {
+            if ( buffer[i] == '\n')
+            {
+                if ( iNext > iStart)
+                {
+                    ManagedString s( (const char *) &buffer[ iStart], iNext - iStart);
+                    csv = csv + s;
+                }
+                csv = csv + "\r\n";
+                if (useUART)
+                    uart->send(csv);
+                else
+                    uBit.serial.send(csv);
+                csv = ManagedString::EmptyString;
+                iStart = i + 1;
+            }
+            iNext = i + 1;
+        }
+        if ( iStart < block && iNext > iStart)
+        {
+            ManagedString s( (const char *) &buffer[ iStart], iNext - iStart);
+            csv = csv + s;
+        }
+
+        address += block;
+        size -= block;
+    }
+    if ( csv.length())
+    {
+        csv = csv + "\r\n";
+        if (useUART)
+            uart->send(csv);
+        else
+            uBit.serial.send(csv);
+    }
+}
+
+
 void datalog_collect()
 {
     datalog_collect_running = true;
-    uBit.log.sendCSV( uart);
+    datalog_sendCSV( uart);
     datalog_collect_running = false;
     release_fiber();
 }
