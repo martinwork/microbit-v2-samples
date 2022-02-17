@@ -110,11 +110,11 @@ int  main()
 
             if ( debug_hangInEndRowTime && ( now1 - debug_hangInEndRowTime) > 5000)
             {
-                //while (true)
-                //{
+                while (true)
+                {
                     uBit.display.scroll("HANG");
-                //    uBit.sleep(100);
-                //}
+                    uBit.sleep(100);
+                }
             }
         }
 
