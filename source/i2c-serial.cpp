@@ -59,6 +59,8 @@ int  main()
 {
     uBit.init();
 
+    // uBit.serial.setBaud(9600);
+
     uBit.serial.setTxBufferSize(254);
 
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,  MICROBIT_BUTTON_EVT_CLICK, onButtonA);
