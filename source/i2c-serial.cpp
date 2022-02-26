@@ -53,6 +53,22 @@ void onButtonB(MicroBitEvent e)
     logging = 0;
 }
 
+void forever()
+{
+    char count[4] = " A ";
+
+    while (true)
+    {
+        uBit.display.image.setPixelValue( 4, 4, uBit.display.image.getPixelValue( 4, 4) ? 0 : 255);
+
+        count[1]++;
+        if (count[1] == 'Z' + 1) count[1] = 'A';
+
+        uBit.serial.send( count);
+        uBit.sleep(50);
+    }
+}
+
 ////////////////////////////////////////////////////////////////
 
 int  main()
@@ -62,11 +78,13 @@ int  main()
     uBit.serial.setBaud(CODAL_SERIAL_DEFAULT_BAUD_RATE);
     //uBit.serial.setBaud(9600);
 
-    uBit.serial.setTxBufferSize(CODAL_SERIAL_DEFAULT_BUFFER_SIZE);
-    //uBit.serial.setTxBufferSize(254);
+    //uBit.serial.setTxBufferSize(CODAL_SERIAL_DEFAULT_BUFFER_SIZE);
+    uBit.serial.setTxBufferSize(254);
 
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,  MICROBIT_BUTTON_EVT_CLICK, onButtonA);
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_B,  MICROBIT_BUTTON_EVT_CLICK, onButtonB);
+
+    create_fiber( forever);
 
     const char *head = "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0u\0v\0w\0x\0y\0z\0";
 
@@ -87,7 +105,13 @@ int  main()
 
         if ( logging != 0)
         {
-            uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);;
+            uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
+
+            //uBit.serial.send("1ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\r\n");
+            //uBit.serial.send("2ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\r\n");
+            //uBit.serial.send("3ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\r\n");
+            //uBit.serial.send("4ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\r\n");
+            //uBit.serial.send("5ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\r\n");
 
             uBit.log.beginRow();
              
