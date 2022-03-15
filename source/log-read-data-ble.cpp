@@ -11,6 +11,7 @@
 
 #include "MicroBit.h"
 
+#include "MicroBitUtilityService.h"
 
 MicroBit uBit;
 
@@ -19,7 +20,7 @@ MicroBitUARTService *bleUART = NULL;
 ////////////////////////////////////////////////////////////////
 
 int num_cols = 10; // The number of additional dummy columns (0 to 26)
-int period   = 100;  // The logging loop period in ms (0 for minimum delay between iterations)
+int period   = 0;  // The logging loop period in ms (0 for minimum delay between iterations)
 
 int loops = 0;
 int logging = 0;
@@ -33,11 +34,11 @@ void datalogFull(MicroBitEvent e)
         uBit.serial.send("FULL " + ManagedString( loops) + "\n");
         uBit.display.printChar('F');
         uBit.audio.soundExpressions.play("giggle");
-        uBit.sleep( 1000);
-        uBit.log.clear(false);
-        uBit.display.scroll(loops);
-        uBit.sleep( 1000);
-        logging = 1;
+//        uBit.sleep( 1000);
+//        uBit.log.clear(false);
+//        uBit.display.scroll(loops);
+//        uBit.sleep( 1000);
+//        logging = 1;
     }
 }
 
@@ -48,10 +49,8 @@ void log()
 
     double delta = 0;
     double count = 0;
-
-    uBit.log.clear(false);
-    uBit.log.setSerialMirroring(false);
-    uBit.log.setTimeStamp(TimeStampFormat::Milliseconds);
+  
+    bool cleared = false;
 
     uBit.messageBus.listen( MICROBIT_ID_LOG, MICROBIT_LOG_EVT_LOG_FULL, datalogFull);
 
@@ -63,6 +62,14 @@ void log()
             continue;
         }
         
+        if ( !cleared)
+        {
+          cleared = true;
+          uBit.log.clear(false);
+          uBit.log.setSerialMirroring(true);
+          uBit.log.setTimeStamp(TimeStampFormat::Milliseconds);
+        }
+      
         CODAL_TIMESTAMP loop0 = system_timer_current_time();
 
         uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
@@ -238,6 +245,11 @@ void onClickB( MicroBitEvent e)
 }
 
 
+void onClickAB( MicroBitEvent e)
+{
+}
+
+
 int main()
 {
     uBit.init();
@@ -246,11 +258,17 @@ int main()
     uBit.serial.setTxBufferSize(254);
   
 #if CONFIG_ENABLED(DEVICE_BLE) && CONFIG_ENABLED(MICROBIT_BLE_ENABLED)
+    MicroBitUtilityService::createShared( *uBit.ble, uBit.messageBus, uBit.storage, uBit.log);
     bleUART = new MicroBitUARTService( *uBit.ble, 240, 240);
+    new MicroBitAccelerometerService(*uBit.ble, uBit.accelerometer);
+    new MicroBitTemperatureService(*uBit.ble, uBit.thermometer);
+    new MicroBitButtonService(*uBit.ble);
+    new MicroBitLEDService(*uBit.ble, uBit.display);
 #endif
     
     uBit.messageBus.listen(DEVICE_ID_BUTTON_A, DEVICE_BUTTON_EVT_CLICK, onClickA);
     uBit.messageBus.listen(DEVICE_ID_BUTTON_B, DEVICE_BUTTON_EVT_CLICK, onClickB);
+    uBit.messageBus.listen(DEVICE_ID_BUTTON_AB, DEVICE_BUTTON_EVT_CLICK, onClickAB);
 
     create_fiber( display);
     create_fiber( log);
