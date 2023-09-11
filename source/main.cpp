@@ -1,14 +1,18 @@
 #include "MicroBit.h"
-#include "samples/Tests.h"
+#include "SerialStreamer.h"
+#include "Tests.h"
 
 MicroBit uBit;
 
-int main()
-{
+int main() {
     uBit.init();
 
-    out_of_box_experience();
+    SerialStreamer *streamer = new SerialStreamer(uBit.audio.processor->output, SERIAL_STREAM_MODE_BINARY);
+    uBit.audio.requestActivation();
+    uBit.audio.activateMic();
 
-    microbit_panic( 999 );
+    while (true) {
+        RefCounted_alltimeunique();
+        uBit.sleep(200);
+    }
 }
-
