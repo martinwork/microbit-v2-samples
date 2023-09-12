@@ -12,7 +12,7 @@ int main() {
     uBit.audio.activateMic();
 
     while (true) {
-        RefCounted_alltimeunique();
+        //RefCounted_alltimeunique();
         uBit.sleep(200);
     }
 }
