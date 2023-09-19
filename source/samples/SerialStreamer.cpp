@@ -50,6 +50,7 @@ int SerialStreamer::pullRequest()
         pr++;
         while(pr)
         {
+            RefCounted_op( NULL, &lastBuffer, "lastBuffer SerialStreamer::pullRequest");
             lastBuffer = upstream.pull();
             streamBuffer(lastBuffer);
             pr--;
