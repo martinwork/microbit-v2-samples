@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 #include "SerialStreamer.h"
 #include "Tests.h"
+#include "CodalDmesg.h"
 
 /**
  * Creates a simple component that logs a stream of signed 16 bit data as signed 8-bit data over serial.
@@ -45,12 +46,13 @@ int SerialStreamer::pullRequest()
 {
     static volatile int pr = 0;
      
+    DMESG("SerialStreamer::pullRequest");
+    
     if(!pr)
     {
         pr++;
         while(pr)
         {
-            //RefCounted_op( NULL, &lastBuffer, "lastBuffer SerialStreamer::pullRequest");
             lastBuffer = upstream.pull();
             streamBuffer(lastBuffer);
             pr--;
@@ -81,14 +83,14 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
     int bps = upstream.getFormat();
 
     // If a BINARY mode is requested, simply output all the bytes to the serial port.
-    if( mode == SERIAL_STREAM_MODE_BINARY )
-    {
-        uint8_t *p = &buffer[0];
-        uint8_t *end = p + buffer.length();
+    // if( mode == SERIAL_STREAM_MODE_BINARY )
+    // {
+    //     uint8_t *p = &buffer[0];
+    //     uint8_t *end = p + buffer.length();
 
-        while(p < end)
-            uBit.serial.putc(*p++);
-    }
+    //     while(p < end)
+    //         uBit.serial.putc(*p++);
+    // }
 
     // if a HEX mode is requested, format using printf, framed by sample size..
     if( mode == SERIAL_STREAM_MODE_HEX || mode == SERIAL_STREAM_MODE_DECIMAL )
