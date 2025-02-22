@@ -94,9 +94,9 @@ void forever()
             doStream--; 
             initialise();
             uBit.display.print("S");
-            DMESG("STREAM");
+            uBit.serial.send("STREAM\n");
             stream(); 
-            DMESG("STREAM done");
+            uBit.serial.send("STREAM done\n");
             uBit.display.clear();
         }
 
