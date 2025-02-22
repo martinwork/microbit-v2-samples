@@ -5,6 +5,7 @@
 MicroBit uBit;
 
 int doRecord = 0;
+int doRecordTwice = 0;
 int doPlay   = 0;
 int doStream = 0;
 
@@ -41,7 +42,7 @@ void initialise()
 void record()
 {
     recording->recordAsync();
-    while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.25)
+    while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
     {
         uBit.sleep(0);
     }
@@ -63,6 +64,12 @@ void stream()
     recording->play();
 }
 
+void streamAsync()
+{
+    recording->connect(*streamer);
+    recording->playAsync();
+}
+
 void forever()
 {
     while (true) {
@@ -78,6 +85,19 @@ void forever()
             uBit.display.clear();
         }
 
+        if ( doRecordTwice)
+        { 
+            doRecordTwice--;
+            uBit.sleep(500);
+            initialise();
+            uBit.display.print("T");
+            DMESG("RECORD TWICE");
+            record();
+            record();
+            DMESG("RECORD TWICE done");
+            uBit.display.clear();
+        }
+
         if ( doPlay)
         { 
             doPlay--;
@@ -85,7 +105,7 @@ void forever()
             uBit.display.print("P");
             DMESG("PLAY");
             play();
-            DMESG("PLAY sone");
+            DMESG("PLAY done");
             uBit.display.clear();
         }
 
@@ -95,7 +115,7 @@ void forever()
             initialise();
             uBit.display.print("S");
             uBit.serial.send("STREAM\n");
-            stream(); 
+            streamAsync(); 
             uBit.serial.send("STREAM done\n");
             uBit.display.clear();
         }
@@ -111,11 +131,12 @@ void onButtonA(MicroBitEvent e)
 
 void onButtonB(MicroBitEvent e)
 {
-    doPlay++;
+    doRecordTwice++;
 }
 
 void onButtonAB(MicroBitEvent e)
 {
+    doPlay++;
 }
 
 void onButtonLogo(MicroBitEvent e)
