@@ -83,7 +83,9 @@ void forever()
             doPlay--;
             initialise();
             uBit.display.print("P");
+            DMESG("PLAY");
             play();
+            DMESG("PLAY sone");
             uBit.display.clear();
         }
 
@@ -92,7 +94,9 @@ void forever()
             doStream--; 
             initialise();
             uBit.display.print("S");
+            DMESG("STREAM");
             stream(); 
+            DMESG("STREAM done");
             uBit.display.clear();
         }
 
