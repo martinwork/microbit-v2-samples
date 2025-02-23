@@ -9,6 +9,12 @@ int doRecordTwice = 0;
 int doPlay   = 0;
 int doStream = 0;
 
+bool activateBeforeRecord = false;
+
+bool analogActive = false;
+
+int analog0 = 0;
+
 static SplitterChannel *splitterChannel = NULL;
 static StreamRecording *recording = NULL;
 static MixerChannel *mixerChannel = NULL;
@@ -41,6 +47,12 @@ void initialise()
 
 void record()
 {
+    if ( activateBeforeRecord)
+    {
+        uBit.audio.activateMic();
+        uBit.audio.mic->setStartDelay(4);
+    }
+
     recording->recordAsync();
     while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
     {
@@ -70,14 +82,44 @@ void streamAsync()
     recording->playAsync();
 }
 
+void toggleAnalogue()
+{
+    analogActive = !analogActive;
+    if (analogActive)
+    {
+      uBit.display.print( "A");
+      analog0 = uBit.io.P2.getAnalogValue();
+    }
+    else
+    {
+      uBit.display.print( "a");
+      uBit.adc.releaseChannel( uBit.io.P2);
+    }
+    uBit.sleep(20);
+    uBit.display.clear();
+}
+
+
+void forever_analog()
+{
+    while (true) {
+        if (analogActive)
+        {
+          analog0 = uBit.io.P2.getAnalogValue();
+        }
+        uBit.sleep(5000);
+    }
+}
+
 void forever()
 {
+    initialise();
+
     while (true) {
         if ( doRecord)
         { 
             doRecord--;
-            uBit.sleep(500);
-            initialise();
+            uBit.sleep(1000);
             uBit.display.print("R");
             DMESG("RECORD");
             record();
@@ -89,7 +131,6 @@ void forever()
         { 
             doRecordTwice--;
             uBit.sleep(500);
-            initialise();
             uBit.display.print("T");
             DMESG("RECORD TWICE");
             record();
@@ -101,7 +142,6 @@ void forever()
         if ( doPlay)
         { 
             doPlay--;
-            initialise();
             uBit.display.print("P");
             DMESG("PLAY");
             play();
@@ -112,31 +152,33 @@ void forever()
         if ( doStream)
         { 
             doStream--; 
-            initialise();
             uBit.display.print("S");
             uBit.serial.send("STREAM\n");
             streamAsync(); 
             uBit.serial.send("STREAM done\n");
             uBit.display.clear();
+            DMESG( "analog0 %d", (int) analog0);
         }
 
         uBit.sleep(20);
     }
 }
 
+
 void onButtonA(MicroBitEvent e)
 {
+    activateBeforeRecord = false;
     doRecord++;
 }
 
 void onButtonB(MicroBitEvent e)
 {
-    doRecordTwice++;
+    activateBeforeRecord = true;
+    doRecord++;
 }
 
 void onButtonAB(MicroBitEvent e)
 {
-    doPlay++;
 }
 
 void onButtonLogo(MicroBitEvent e)
@@ -144,15 +186,30 @@ void onButtonLogo(MicroBitEvent e)
     doStream++;
 }
 
+void onButtonP0(MicroBitEvent e)
+{
+    toggleAnalogue();
+}
+
+void onButtonP1(MicroBitEvent e)
+{
+}
+
 int main() {
     uBit.init();
+
+    uBit.io.P0.isTouched( TouchMode::Capacitative);
+    uBit.io.P1.isTouched( TouchMode::Capacitative);
 
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_A,   MICROBIT_BUTTON_EVT_CLICK, onButtonA);
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_B,   MICROBIT_BUTTON_EVT_CLICK, onButtonB);
     uBit.messageBus.listen( MICROBIT_ID_BUTTON_AB,  MICROBIT_BUTTON_EVT_CLICK, onButtonAB);
     uBit.messageBus.listen( MICROBIT_ID_LOGO,       MICROBIT_BUTTON_EVT_CLICK, onButtonLogo);
+    uBit.messageBus.listen( MICROBIT_ID_IO_P0,      MICROBIT_BUTTON_EVT_CLICK, onButtonP0);
+    uBit.messageBus.listen( MICROBIT_ID_IO_P1,      MICROBIT_BUTTON_EVT_CLICK, onButtonP1);
 
     create_fiber( forever);
+    create_fiber( forever_analog);
 
     release_fiber();
     return 0;
