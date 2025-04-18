@@ -131,7 +131,7 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
 
             CRLF++;
 
-            if (CRLF >= 16){
+            if (CRLF >= 32){
                 uBit.serial.putc('\r');
                 uBit.serial.putc('\n');
                 CRLF = 0;
@@ -142,5 +142,8 @@ void SerialStreamer::streamBuffer(ManagedBuffer buffer)
             uBit.serial.putc( '\r' );
             uBit.serial.putc( '\n' );
         }
+
+        uBit.serial.putc( '\r' );
+        uBit.serial.putc( '\n' );
     }
 }
