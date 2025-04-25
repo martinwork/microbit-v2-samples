@@ -1,64 +1,119 @@
 #include "MicroBit.h"
-#include "StreamRecording.h"
 #include "SerialStreamer.h"
 
 MicroBit uBit;
 
-void forever()
-{
-    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
-    StreamRecording *recording        = new StreamRecording(*splitterChannel);
-    SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
+int main() {
+    uBit.init();
 
-    while (true)
-    {
-        uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
-
-        uBit.display.print("R");
-        DMESG("PAUSE");
+    static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
+    SerialStreamer *streamer = new SerialStreamer(*splitterChannel, SERIAL_STREAM_MODE_DECIMAL);
+    //uBit.audio.requestActivation();
+    //uBit.audio.activateMic();
+    DMESG("main calling dataWanted");
+    splitterChannel->dataWanted( DATASTREAM_WANTED);
+    while (true) {
         uBit.sleep(1000);
-        DMESG("RECORD");
-
-        // on demand activateMic doesn't work after an analogue read of a pin
-        // calling activateMic in advance stops it hanging
-        //uBit.audio.activateMic();
-        //uBit.audio.mic->setStartDelay(4);
-
-        recording->recordAsync();
-        while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
-        {
-            uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
-            uBit.sleep(0);
-        }
-        recording->stop();
-
-        DMESG("RECORD done");
-        uBit.display.clear();
-
-        DMESG("STREAM");
-        uBit.sleep(100);
-        uBit.display.print("A");
-        recording->connect(*streamer);
-        DMESG("playAsync");
-        recording->playAsync();   // works like sync
-        DMESG("playAsync done");
-        uBit.sleep(500);
-        DMESG("play");
-        uBit.sleep(100);
-        uBit.display.print("P");
-        recording->play();         // play() hangs
-        DMESG("STREAM done");
-
-        uBit.sleep(100);
     }
 }
 
-int main() {
-    uBit.init();
-    create_fiber( forever);
-    release_fiber();
-    return 0;
-}
+//#include "MicroBit.h"
+//#include "SerialStreamer.h"
+//
+//MicroBit uBit;
+//
+//int main() {
+//    uBit.init();
+//
+//    static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
+//    // splitterChannel->requestSampleRate( 11000 ); // <-- This is only needed for builds from the main branch
+//    SerialStreamer *streamer = new SerialStreamer(*splitterChannel, SERIAL_STREAM_MODE_DECIMAL);
+//    uBit.audio.requestActivation();
+//    uBit.audio.activateMic();
+//
+//    while (true) {
+//        uBit.sleep(1000);
+//    }
+//}
+
+//#include "MicroBit.h"
+//#include "SerialStreamer.h"
+//
+//MicroBit uBit;
+//
+//int main() {
+//    uBit.init();
+//
+//    SerialStreamer *streamer = new SerialStreamer(uBit.audio.processor->output, SERIAL_STREAM_MODE_DECIMAL);
+//    uBit.audio.requestActivation();
+//    uBit.audio.activateMic();
+//
+//    while (true) {
+//        uBit.sleep(1000);
+//    }
+//}
+
+//#include "MicroBit.h"
+//#include "StreamRecording.h"
+//#include "SerialStreamer.h"
+//
+//MicroBit uBit;
+//
+//void forever()
+//{
+//    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
+//    StreamRecording *recording        = new StreamRecording(*splitterChannel);
+//    SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
+//
+//    while (true)
+//    {
+//        uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
+//
+//        uBit.display.print("R");
+//        DMESG("PAUSE");
+//        uBit.sleep(1000);
+//        DMESG("RECORD");
+//
+//        // on demand activateMic doesn't work after an analogue read of a pin
+//        // calling activateMic in advance stops it hanging
+//        //uBit.audio.activateMic();
+//        //uBit.audio.mic->setStartDelay(4);
+//
+//        recording->recordAsync();
+//        while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
+//        {
+//            uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
+//            uBit.sleep(0);
+//        }
+//        recording->stop();
+//
+//        DMESG("RECORD done");
+//        uBit.display.clear();
+//
+//        DMESG("STREAM");
+//        uBit.sleep(100);
+//        uBit.display.print("A");
+//        recording->connect(*streamer);
+//        DMESG("playAsync");
+//        recording->playAsync();   // works like sync
+//        DMESG("playAsync done");
+//        uBit.sleep(500);
+//        DMESG("play");
+//        uBit.sleep(100);
+//        uBit.display.print("P");
+//        recording->play();         // play() hangs
+//        DMESG("STREAM done");
+//
+//        uBit.sleep(100);
+//    }
+//}
+//
+//int main() {
+//    uBit.init();
+//    create_fiber( forever);
+//    release_fiber();
+//    return 0;
+//}
 
 
 
