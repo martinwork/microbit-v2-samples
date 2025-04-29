@@ -1,21 +1,49 @@
 #include "MicroBit.h"
-#include "SerialStreamer.h"
 
 MicroBit uBit;
 
-int main() {
-    uBit.init();
+int decibels2makecode( int db)
+{
+  db = max( 52, min( db, 120));
+  db = (db - 52) * 255 / ( 120 - 52);
+  db = max( 0, min( db, 255));
+  return db;
+}
 
-    static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
-    SerialStreamer *streamer = new SerialStreamer(*splitterChannel, SERIAL_STREAM_MODE_DECIMAL);
-    //uBit.audio.requestActivation();
-    //uBit.audio.activateMic();
-    DMESG("main calling dataWanted");
-    splitterChannel->dataWanted( DATASTREAM_WANTED);
-    while (true) {
-        uBit.sleep(1000);
+void forever()
+{
+    while (true)
+    {
+        uBit.display.scroll( ManagedString( (int) decibels2makecode( uBit.audio.levelSPL->getValue())));
+        uBit.sleep(20);
     }
 }
+
+int main()
+{
+    uBit.init();
+    create_fiber( forever);
+    release_fiber();
+}
+
+//#include "MicroBit.h"
+//#include "SerialStreamer.h"
+//
+//MicroBit uBit;
+//
+//int main() {
+//    uBit.init();
+//
+//    static SplitterChannel *splitterChannel = uBit.audio.splitter->createChannel();
+//    SerialStreamer *streamer = new SerialStreamer(*splitterChannel, SERIAL_STREAM_MODE_DECIMAL);
+//    //uBit.audio.requestActivation();
+//    //uBit.audio.activateMic();
+//    DMESG("main calling dataWanted");
+//    splitterChannel->dataWanted( DATASTREAM_WANTED);
+//    while (true) {
+//        uBit.sleep(1000);
+//    }
+//}
 
 //#include "MicroBit.h"
 //#include "SerialStreamer.h"
