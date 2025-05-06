@@ -5,15 +5,15 @@
         "branch": "master",
         "type": "git"
     },
-    "config":{
-        "DEVICE_DMESG_BUFFER_SIZE":1024,
-        "DMESG_SERIAL_DEBUG":1,
-        "DMESG_ENABLE":1,
+    "not_config":{
+        "DEVICE_DMESG_BUFFER_SIZE":0,
+        "DMESG_SERIAL_DEBUG":0,
+        "DMESG_ENABLE":0,
 
         "MICROBIT_BLE_ENABLED": 0,
         "MICROBIT_BLE_PAIRING_MODE": 0,
     }
-    "notconfig":{
+    "config":{
         "DEVICE_DMESG_BUFFER_SIZE":0,
         "DMESG_SERIAL_DEBUG":0,
         "DMESG_ENABLE":0,
