@@ -5,18 +5,10 @@
         "branch": "master",
         "type": "git"
     },
-    "not_config":{
-        "DEVICE_DMESG_BUFFER_SIZE":0,
-        "DMESG_SERIAL_DEBUG":0,
-        "DMESG_ENABLE":0,
-
-        "MICROBIT_BLE_ENABLED": 0,
-        "MICROBIT_BLE_PAIRING_MODE": 0,
-    }
     "config":{
-        "DEVICE_DMESG_BUFFER_SIZE":0,
-        "DMESG_SERIAL_DEBUG":0,
-        "DMESG_ENABLE":0,
+        "DEVICE_DMESG_BUFFER_SIZE":4096,
+        "DMESG_SERIAL_DEBUG":1,
+        "DMESG_ENABLE":1,
 
         "MICROBIT_BLE_ENABLED": 0,
         "MICROBIT_BLE_PAIRING_MODE": 1,
