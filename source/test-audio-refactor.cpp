@@ -10,7 +10,7 @@ void forever()
 {
     SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
     StreamRecording *recording        = new StreamRecording(*splitterChannel);
-    SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
+    //SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
 
     while (true)
     {
