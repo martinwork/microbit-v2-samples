@@ -1,4 +1,4 @@
-// https://github.com/lancaster-university/codal-microbit-v2/issues/446
+// https://github.com/lancaster-university/codal-microbit-v2/issues/478
 
 #include "MicroBit.h"
 #include "StreamRecording.h"
@@ -8,74 +8,49 @@ MicroBit uBit;
 
 void forever()
 {
-    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
-    StreamRecording *recording        = new StreamRecording(*splitterChannel);
-    SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
+    DMESG("forever");
 
-    recording->recordAsync();
-    recording->stop();
+    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
+
+    DMESG("splitterChannel");
+
+    StreamRecording *recording        = new StreamRecording(*splitterChannel);
+
+    DMESG("recording");
+
+    //SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
 
     while (true)
     {
         uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
         uBit.sleep(100);
 
-        if ( uBit.buttonA.isPressed())
-        {
-          uBit.display.print("R");
-          DMESG("PAUSE");
-          uBit.sleep(1000);
-          DMESG("RECORD");
-
-          recording->recordAsync();
-          while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
-          {
-              uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
-              uBit.sleep(0);
-          }
-          recording->stop();
-
-          DMESG("RECORD done");
-          uBit.display.clear();
-
-          DMESG("STREAM");
-          uBit.sleep(100);
-          uBit.display.print("P");
-          recording->play();
-          DMESG("STREAM done");
-          uBit.display.clear();
-        }
-
         if ( uBit.buttonB.isPressed())
         {
-          uBit.display.print("R");
-          DMESG("PAUSE");
-          uBit.sleep(1000);
-          DMESG("RECORD");
+            uBit.display.print("B");
+            DMESG("PAUSE");
+            uBit.sleep(1000);
+            uBit.display.print("R");
+            DMESG("RECORD");
 
-          uBit.audio.activateMic();
-          uBit.audio.mic->setStartDelay(5);
+            recording->recordAsync();
+            while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
+            {
+                int analog = uBit.io.P2.getAnalogValue();
+                DMESG("analog %d", (int) analog);
 
-          recording->recordAsync();
-          while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
-          {
-              uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
-              uBit.sleep(0);
-          }
-          recording->stop();
+                uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
+                uBit.sleep(10);
+            }
+            recording->stop();
+            uBit.adc.releasePin( uBit.io.P2);
 
-          DMESG("RECORD done");
-          uBit.display.clear();
-
-          DMESG("STREAM");
-          uBit.sleep(100);
-          uBit.display.print("P");
-          recording->play();
-          DMESG("STREAM done");
-          uBit.display.clear();
+            DMESG("RECORD done");
+            uBit.display.clear();
         }
     }
 }
+
 
 int main() {
     uBit.init();
@@ -83,6 +58,73 @@ int main() {
     release_fiber();
     return 0;
 }
+
+//// https://github.com/lancaster-university/codal-microbit-v2/issues/442
+//
+//#include "MicroBit.h"
+//#include "StreamRecording.h"
+//#include "SerialStreamer.h"
+//
+//MicroBit uBit;
+//
+//void forever()
+//{
+//    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
+//    StreamRecording *recording        = new StreamRecording(*splitterChannel);
+//    SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
+//
+//    while (true)
+//    {
+//        uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
+//        uBit.sleep(100);
+//
+//        if ( uBit.buttonA.isPressed())
+//        {
+//          uBit.display.print("R");
+//          DMESG("PAUSE");
+//          uBit.sleep(1000);
+//          DMESG("RECORD");
+//
+//          recording->recordAsync();
+//          while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
+//          {
+//              uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
+//              uBit.sleep(0);
+//          }
+//          recording->stop();
+//
+//          DMESG("RECORD done");
+//          uBit.display.clear();
+//
+//          DMESG("STREAM");
+//          uBit.sleep(100);
+//          uBit.display.print("P");
+//          recording->play();
+//          DMESG("STREAM done");
+//          uBit.display.clear();
+//        }
+//
+//        if ( uBit.buttonB.isPressed())
+//        {
+//          //int analog0 = uBit.io.P0.getAnalogValue();
+//          //DMESG("analog0 %d", (int) analog0);
+//          //int analog1 = uBit.io.P1.getAnalogValue();
+//          //DMESG("analog1 %d", (int) analog1);
+//          //int analog2 = uBit.io.P2.getAnalogValue();
+//          //DMESG("analog2 %d", (int) analog2);
+//
+//          uBit.audio.mic->setSampleRate(2750);
+//          DMESG("getSampleRate %d", (int) uBit.audio.mic->getSampleRate());
+//        }
+//    }
+//}
+//
+//int main() {
+//    uBit.init();
+//    create_fiber( forever);
+//    release_fiber();
+//    return 0;
+//}
 
 //// https://github.com/lancaster-university/codal-microbit-v2/issues/485
 //
@@ -102,59 +144,6 @@ int main() {
 //    {
 //        uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
 //        uBit.sleep(100);
-//    }
-//}
-//
-//
-//int main() {
-//    uBit.init();
-//    create_fiber( forever);
-//    release_fiber();
-//    return 0;
-//}
-
-//// https://github.com/lancaster-university/codal-microbit-v2/issues/478
-//
-//#include "MicroBit.h"
-//#include "StreamRecording.h"
-//#include "SerialStreamer.h"
-//
-//MicroBit uBit;
-//
-//void forever()
-//{
-//    SplitterChannel *splitterChannel  = uBit.audio.splitter->createChannel();
-//    StreamRecording *recording        = new StreamRecording(*splitterChannel);
-//    //SerialStreamer  *streamer         = new SerialStreamer(*recording, SERIAL_STREAM_MODE_DECIMAL);
-//
-//    while (true)
-//    {
-//        uBit.display.image.setPixelValue( 0, 0, uBit.display.image.getPixelValue( 0, 0) ? 0 : 255);
-//        uBit.sleep(100);
-//
-//        if ( uBit.buttonB.isPressed())
-//        {
-//            uBit.display.print("B");
-//            DMESG("PAUSE");
-//            uBit.sleep(1000);
-//            uBit.display.print("R");
-//            DMESG("RECORD");
-//
-//            recording->recordAsync();
-//            while ( recording->isRecording() && recording->duration( recording->getSampleRate()) < 0.1)
-//            {
-//                int analog = uBit.io.P2.getAnalogValue();
-//                DMESG("analog %d", (int) analog);
-//
-//                uBit.display.image.setPixelValue( 4, 0, uBit.display.image.getPixelValue( 4, 0) ? 0 : 255);
-//                uBit.sleep(10);
-//            }
-//            recording->stop();
-//            uBit.adc.releasePin( uBit.io.P2);
-//
-//            DMESG("RECORD done");
-//            uBit.display.clear();
-//        }
 //    }
 //}
 //
